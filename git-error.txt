@@ -1,0 +1,34 @@
+-----------------------------------------------------------------------
+1.error: gnutls_handshake() failed: A TLS packet with unexpected length was received.
+
+solution:
+http://stackoverflow.com/questions/13524242/error-gnutls-handshake-failed-git-repository
+The following is the new method for pycurl_7.19.0-4ubuntu3:
+
+sudo apt-get install build-essential fakeroot dpkg-dev
+mkdir ~/python-pycurl-openssl
+cd ~/python-pycurl-openssl
+sudo apt-get source python-pycurl
+sudo apt-get build-dep python-pycurl
+sudo apt-get install libcurl4-openssl-dev
+sudo dpkg-source -x pycurl_7.19.0-4ubuntu3.dsc
+cd pycurl-7.19.0
+# remove the HAVE_CURL_GNUTLS=1 in the following file
+sudo vim debian/patches/10_setup.py.dpatch
+# remove the HAVE_CURL_GNUTLS=1 in the following file
+sudo vim setup.py
+# replace all gnutls into openssl in the following file
+sudo vim debian/control
+sudo dpkg-buildpackage -rfakeroot -b
+sudo dpkg -i ../python-pycurl_7.19.0-4ubuntu3_amd64.deb
+
+Thanks for sharing this. During the last step, I get the following error. Do you have any clues? $ sudo dpkg -i ../python-pycurl_7.19.0-4ubuntu3_amd64.deb dpkg: error processing ../python-pycurl_7.19.0-4ubuntu3_amd64.deb (--install): cannot access archive: No such file or directory Errors were encountered while processing: ../python-pycurl_7.19.0-4ubuntu3_amd64.deb – Arun Jayapal Nov 23 '12 at 10:14
+1     
+@user1514027 I suppose it depends on the exact .deb file name built by the previous step (the dpkg-buildpackage). You need to have a look and search for the actual name generated. – VonC Nov 23 '12 at 10:16
+It works. Thank you very much – Arun Jayapal Nov 24 '12 at 7:25
+I followed this solution, deviations included the source source file presenting as pycurl_7.19.0-3.dsc instead of pycurl_7.19.0-4ubuntu3.dsc. I also found it necessary to NOT edit patch file, doing so caused an MD5 failure on the build. – 2NinerRomeo Feb 7 at 18:54
+1     
+In the end, the behavior is unchanged, perhaps I need to find a way to really stop that macro from being defined. Perhaps I can manually make the changes to setup.py and stop the patch from being applied? – 2NinerRomeo Feb 7 at 18:56
+
+-----------------------------------------------------------------
+2.
